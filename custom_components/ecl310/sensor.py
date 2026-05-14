@@ -18,7 +18,6 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
     UnitOfVolume,
-    UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -181,7 +180,7 @@ SONOMETER_SENSORS: tuple[ECL310SensorDescription, ...] = (
     ECL310SensorDescription(
         key="sonometer_flow",
         translation_key="sonometer_flow",
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        native_unit_of_measurement="L/h",
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda d: d.sonometer_flow,
