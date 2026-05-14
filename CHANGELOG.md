@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/alexhaller/ECL310_HA/compare/v1.0.1...v1.0.2) (2026-05-14)
+
+### Bug Fixes
+
+* add @semantic-release/github to create GitHub releases ([8324e07](https://github.com/alexhaller/ECL310_HA/commit/8324e074c93c869bf0628d0ecc048965acd8d5aa))
+
 ## [1.0.1](https://github.com/alexhaller/ECL310_HA/compare/v1.0.0...v1.0.1) (2026-05-14)
 
 ### Bug Fixes
