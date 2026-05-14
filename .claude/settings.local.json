@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p custom_components/ecl310/brand custom_components/ecl310/translations brands .github/workflows .claude && echo \"done\")",
+      "Bash(ruff format *)",
+      "Bash(pip install *)",
+      "Bash(python -c \"import pymodbus; print\\(pymodbus.__version__\\); from pymodbus.client.mixin import ModbusClientMixin; import inspect; sig = inspect.signature\\(ModbusClientMixin.read_input_registers\\); print\\(sig\\)\")",
+      "Bash(python -c \"from pymodbus.client.mixin import ModbusClientMixin; import inspect; print\\(inspect.signature\\(ModbusClientMixin.write_register\\)\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"from pymodbus.client.mixin import ModbusClientMixin; import inspect; sig = inspect.signature\\(ModbusClientMixin.read_input_registers\\); print\\('device_id' in str\\(sig\\)\\)\")",
+      "Bash(python -c \"from pymodbus.client.mixin import ModbusClientMixin; import inspect; print\\(inspect.signature\\(ModbusClientMixin.read_input_registers\\)\\)\")",
+      "Bash(python -c \"from PIL import Image, ImageDraw, ImageFont; print\\('ok'\\)\")",
+      "Bash(python)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\alexa\\OneDrive\\Repos\\ECL310_HA"
+    ]
+  }
+}

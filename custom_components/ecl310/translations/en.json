@@ -1,0 +1,56 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Danfoss ECL 310",
+        "description": "Enter the connection details for your ECL 310 controller.",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "port": "Modbus TCP port",
+          "slave_id": "Slave ID"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the device. Please check the host and try again.",
+      "invalid_host": "Invalid host. Please enter a valid IP address or hostname.",
+      "unknown": "Unexpected error. Please check the logs for more details."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "outside_temp": {"name": "Outside Temperature"},
+      "outside_temp_min": {"name": "Outside Temperature Min"},
+      "outside_temp_max": {"name": "Outside Temperature Max"},
+      "heating_flow_temp": {"name": "Heating Flow Temperature"},
+      "heating_return_temp": {"name": "Heating Return Temperature"},
+      "heating_comfort_temp": {"name": "Heating Comfort Setpoint"},
+      "heating_saving_temp": {"name": "Heating Saving Setpoint"},
+      "heating_status": {"name": "Heating Status"},
+      "warmwater_flow_temp": {"name": "Warm Water Flow Temperature"},
+      "warmwater_return_temp": {"name": "Warm Water Return Temperature"},
+      "warmwater_comfort_temp": {"name": "Warm Water Comfort Setpoint"},
+      "warmwater_saving_temp": {"name": "Warm Water Saving Setpoint"},
+      "warmwater_status": {"name": "Warm Water Status"},
+      "sonometer_t_flow": {"name": "Primary Flow Temperature"},
+      "sonometer_t_return": {"name": "Primary Return Temperature"},
+      "sonometer_flow": {"name": "Flow Rate"},
+      "sonometer_power": {"name": "Power"},
+      "sonometer_volume": {"name": "Volume"},
+      "sonometer_energy": {"name": "Energy"}
+    },
+    "number": {
+      "heating_comfort_temp": {"name": "Heating Comfort Temperature"},
+      "heating_saving_temp": {"name": "Heating Saving Temperature"},
+      "warmwater_comfort_temp": {"name": "Warm Water Comfort Temperature"},
+      "warmwater_saving_temp": {"name": "Warm Water Saving Temperature"}
+    },
+    "select": {
+      "heating_op_mode": {"name": "Heating Operating Mode"},
+      "warmwater_op_mode": {"name": "Warm Water Operating Mode"}
+    }
+  }
+}
