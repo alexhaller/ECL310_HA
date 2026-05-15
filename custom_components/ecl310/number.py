@@ -14,7 +14,6 @@ from homeassistant.components.number import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import BaseEntity, ECL310Coordinator
@@ -49,7 +48,6 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         native_min_value=5.0,
         native_max_value=26.0,
         native_step=0.5,
-        entity_category=EntityCategory.CONFIG,
         address=REG_HEATING_COMFORT_TEMP,
         scale=0.1,
         value_fn=lambda d: d.heating_comfort_temp,
@@ -63,7 +61,6 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         native_min_value=5.0,
         native_max_value=26.0,
         native_step=0.5,
-        entity_category=EntityCategory.CONFIG,
         address=REG_HEATING_SAVING_TEMP,
         scale=0.1,
         value_fn=lambda d: d.heating_saving_temp,
@@ -77,7 +74,6 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         native_min_value=40.0,
         native_max_value=75.0,
         native_step=0.5,
-        entity_category=EntityCategory.CONFIG,
         address=REG_WARMWATER_COMFORT_TEMP,
         scale=0.1,
         value_fn=lambda d: d.warmwater_comfort_temp,
@@ -91,7 +87,6 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         native_min_value=40.0,
         native_max_value=75.0,
         native_step=0.5,
-        entity_category=EntityCategory.CONFIG,
         address=REG_WARMWATER_SAVING_TEMP,
         scale=0.1,
         value_fn=lambda d: d.warmwater_saving_temp,

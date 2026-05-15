@@ -7,6 +7,8 @@ import logging
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.exceptions import ModbusException
 
+from .const import REG_OUTSIDE_MAX, REG_OUTSIDE_MIN
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -122,14 +124,21 @@ class ECL310Device:
     async def _read_outside_minmax(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        # 10499 = min, 10504 = max — read 6 registers and pick indices 0 and 5
-        result = await client.read_input_registers(10499, count=6, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Outside min/max read failed")
-            return
-        r = result.registers
-        self.outside_temp_min = round(_s16(r[0]) * 0.01, 1)
-        self.outside_temp_max = round(_s16(r[5]) * 0.01, 1)
+        result_min = await client.read_input_registers(
+            REG_OUTSIDE_MIN, count=1, device_id=slave
+        )
+        if not result_min.isError():
+            self.outside_temp_min = round(_s16(result_min.registers[0]) * 0.01, 1)
+        else:
+            _LOGGER.warning("Outside temp min read failed")
+
+        result_max = await client.read_input_registers(
+            REG_OUTSIDE_MAX, count=1, device_id=slave
+        )
+        if not result_max.isError():
+            self.outside_temp_max = round(_s16(result_max.registers[0]) * 0.01, 1)
+        else:
+            _LOGGER.warning("Outside temp max read failed")
 
     async def _read_holding_modes(
         self, client: AsyncModbusTcpClient, slave: int

@@ -27,13 +27,9 @@
       "outside_temp_max": {"name": "Outside Temperature Max"},
       "heating_flow_temp": {"name": "Heating Flow Temperature"},
       "heating_return_temp": {"name": "Heating Return Temperature"},
-      "heating_comfort_temp": {"name": "Heating Comfort Setpoint"},
-      "heating_saving_temp": {"name": "Heating Saving Setpoint"},
       "heating_status": {"name": "Heating Status"},
       "warmwater_flow_temp": {"name": "Warm Water Flow Temperature"},
       "warmwater_return_temp": {"name": "Warm Water Return Temperature"},
-      "warmwater_comfort_temp": {"name": "Warm Water Comfort Setpoint"},
-      "warmwater_saving_temp": {"name": "Warm Water Saving Setpoint"},
       "warmwater_status": {"name": "Warm Water Status"},
       "sonometer_t_flow": {"name": "Primary Flow Temperature"},
       "sonometer_t_return": {"name": "Primary Return Temperature"},
@@ -49,8 +45,26 @@
       "warmwater_saving_temp": {"name": "Warm Water Saving Temperature"}
     },
     "select": {
-      "heating_op_mode": {"name": "Heating Operating Mode"},
-      "warmwater_op_mode": {"name": "Warm Water Operating Mode"}
+      "heating_op_mode": {
+        "name": "Heating Operating Mode",
+        "state": {
+          "Manual": "Manual",
+          "Scheduled": "Scheduled",
+          "Comfort": "Comfort",
+          "Setback": "Setback",
+          "Frost protection": "Frost Protection"
+        }
+      },
+      "warmwater_op_mode": {
+        "name": "Warm Water Operating Mode",
+        "state": {
+          "Manual": "Manual",
+          "Scheduled": "Scheduled",
+          "Comfort": "Comfort",
+          "Setback": "Setback",
+          "Frost protection": "Frost Protection"
+        }
+      }
     }
   }
 }

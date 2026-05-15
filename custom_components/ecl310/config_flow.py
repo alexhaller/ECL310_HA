@@ -8,6 +8,7 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.exceptions import HomeAssistantError
 
 from .const import CONF_SLAVE, DEFAULT_PORT, DEFAULT_SLAVE, DOMAIN
 from .ecl310 import ECL310Device
@@ -27,11 +28,11 @@ STEP_USER_SCHEMA = vol.Schema(
 )
 
 
-class CannotConnect(Exception):
+class CannotConnect(HomeAssistantError):
     """Raised when connection to the device fails."""
 
 
-class InvalidHost(Exception):
+class InvalidHost(HomeAssistantError):
     """Raised when the host string is not a valid IP or hostname."""
 
 
