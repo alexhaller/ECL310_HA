@@ -31,6 +31,26 @@
       "warmwater_flow_temp": {"name": "Warm Water Flow Temperature"},
       "warmwater_return_temp": {"name": "Warm Water Return Temperature"},
       "warmwater_status": {"name": "Warm Water Status"},
+      "heating_active_mode": {
+        "name": "Active Heating Mode",
+        "state": {
+          "manual": "Manual",
+          "scheduled": "Scheduled",
+          "comfort": "Comfort",
+          "setback": "Setback",
+          "frost_protection": "Frost Protection"
+        }
+      },
+      "warmwater_active_mode": {
+        "name": "Active Warm Water Mode",
+        "state": {
+          "manual": "Manual",
+          "scheduled": "Scheduled",
+          "comfort": "Comfort",
+          "setback": "Setback",
+          "frost_protection": "Frost Protection"
+        }
+      },
       "sonometer_t_flow": {"name": "Primary Flow Temperature"},
       "sonometer_t_return": {"name": "Primary Return Temperature"},
       "sonometer_flow": {"name": "Flow Rate"},
