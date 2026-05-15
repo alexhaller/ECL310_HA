@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/alexhaller/ECL310_HA/compare/v1.0.4...v1.1.0) (2026-05-15)
+
+### Features
+
+* add diagnostic sensors for active heating and warm water operating mode ([4f5f25c](https://github.com/alexhaller/ECL310_HA/commit/4f5f25cc38380e185a722a255b869b587ca811af))
+
 ## [1.0.4](https://github.com/alexhaller/ECL310_HA/compare/v1.0.3...v1.0.4) (2026-05-15)
 
 ### Bug Fixes
