@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/alexhaller/ECL310_HA/compare/v1.0.2...v1.0.3) (2026-05-15)
+
+### Bug Fixes
+
+* resolve entity issues found during live testing ([67659e4](https://github.com/alexhaller/ECL310_HA/commit/67659e4e1be8c67ade2249afaca736f5a7b1dd4b))
+
 ## [1.0.2](https://github.com/alexhaller/ECL310_HA/compare/v1.0.1...v1.0.2) (2026-05-14)
 
 ### Bug Fixes
