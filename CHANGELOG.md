@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/alexhaller/ECL310_HA/compare/v1.0.3...v1.0.4) (2026-05-15)
+
+### Bug Fixes
+
+* use lowercase snake_case keys for select entity translation states ([74e43d2](https://github.com/alexhaller/ECL310_HA/commit/74e43d2bc48e9ccba10b2bc90040f826b605fb16))
+
 ## [1.0.3](https://github.com/alexhaller/ECL310_HA/compare/v1.0.2...v1.0.3) (2026-05-15)
 
 ### Bug Fixes
