@@ -8,11 +8,11 @@ DEFAULT_SLAVE = 1
 CONF_SLAVE = "slave_id"
 
 OPERATING_MODES: dict[int, str] = {
-    0: "Manual",
-    1: "Scheduled",
-    2: "Comfort",
-    3: "Setback",
-    4: "Frost protection",
+    0: "manual",
+    1: "scheduled",
+    2: "comfort",
+    3: "setback",
+    4: "frost_protection",
 }
 
 # Input register addresses

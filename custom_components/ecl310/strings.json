@@ -48,21 +48,21 @@
       "heating_op_mode": {
         "name": "Heating Operating Mode",
         "state": {
-          "Manual": "Manual",
-          "Scheduled": "Scheduled",
-          "Comfort": "Comfort",
-          "Setback": "Setback",
-          "Frost protection": "Frost Protection"
+          "manual": "Manual",
+          "scheduled": "Scheduled",
+          "comfort": "Comfort",
+          "setback": "Setback",
+          "frost_protection": "Frost Protection"
         }
       },
       "warmwater_op_mode": {
         "name": "Warm Water Operating Mode",
         "state": {
-          "Manual": "Manual",
-          "Scheduled": "Scheduled",
-          "Comfort": "Comfort",
-          "Setback": "Setback",
-          "Frost protection": "Frost Protection"
+          "manual": "Manual",
+          "scheduled": "Scheduled",
+          "comfort": "Comfort",
+          "setback": "Setback",
+          "frost_protection": "Frost Protection"
         }
       }
     }
