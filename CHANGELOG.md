@@ -1,3 +1,9 @@
+## [1.1.2](https://github.com/alexhaller/ECL310_HA/compare/v1.1.1...v1.1.2) (2026-05-16)
+
+### Bug Fixes
+
+* rename operating mode diagnostic sensors and show raw Modbus integer ([3f14fa6](https://github.com/alexhaller/ECL310_HA/commit/3f14fa680839449c6fdfb167091727e8d298945c))
+
 ## [1.1.1](https://github.com/alexhaller/ECL310_HA/compare/v1.1.0...v1.1.1) (2026-05-16)
 
 ### Bug Fixes
