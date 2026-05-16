@@ -25,7 +25,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import BaseEntity, ECL310Coordinator
-from .const import DOMAIN, OPERATING_MODES
+from .const import DOMAIN
 from .ecl310 import ECL310Device
 
 PARALLEL_UPDATES = 0
@@ -35,7 +35,7 @@ PARALLEL_UPDATES = 0
 class ECL310SensorDescription(SensorEntityDescription):
     """Sensor description with value accessor."""
 
-    value_fn: Callable[[ECL310Device], float | int | str | None]
+    value_fn: Callable[[ECL310Device], float | int | None]
 
 
 ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
@@ -115,24 +115,16 @@ ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
         value_fn=lambda d: d.warmwater_status,
     ),
     ECL310SensorDescription(
-        key="heating_active_mode",
-        translation_key="heating_active_mode",
+        key="heating_op_mode_status",
+        translation_key="heating_op_mode_status",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda d: (
-            OPERATING_MODES.get(d.heating_op_mode)
-            if d.heating_op_mode is not None
-            else None
-        ),
+        value_fn=lambda d: d.heating_op_mode,
     ),
     ECL310SensorDescription(
-        key="warmwater_active_mode",
-        translation_key="warmwater_active_mode",
+        key="warmwater_op_mode_status",
+        translation_key="warmwater_op_mode_status",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda d: (
-            OPERATING_MODES.get(d.warmwater_op_mode)
-            if d.warmwater_op_mode is not None
-            else None
-        ),
+        value_fn=lambda d: d.warmwater_op_mode,
     ),
 )
 
@@ -227,7 +219,7 @@ class ECL310SensorEntity(BaseEntity, SensorEntity):
         self._attr_unique_id = f"{self._host}_{description.key}"
 
     @property
-    def native_value(self) -> float | int | str | None:
+    def native_value(self) -> float | int | None:
         return self.entity_description.value_fn(self._device)
 
 
@@ -258,5 +250,5 @@ class SonometerSensorEntity(BaseEntity, SensorEntity):
         return self._sonometer_device_info
 
     @property
-    def native_value(self) -> float | int | str | None:
+    def native_value(self) -> float | int | None:
         return self.entity_description.value_fn(self._device)
