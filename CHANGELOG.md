@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/alexhaller/ECL310_HA/compare/v1.1.0...v1.1.1) (2026-05-16)
+
+### Bug Fixes
+
+* set step to 0.1 and warm water max to 80 °C for number setpoints ([55c8aef](https://github.com/alexhaller/ECL310_HA/commit/55c8aef102f0afdd342b21852d9784ccd4b5087e))
+
 ## [1.1.0](https://github.com/alexhaller/ECL310_HA/compare/v1.0.4...v1.1.0) (2026-05-15)
 
 ### Features
