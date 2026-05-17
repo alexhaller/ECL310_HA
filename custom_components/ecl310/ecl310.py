@@ -22,6 +22,12 @@ def _u32(high: int, low: int) -> int:
     return (high << 16) | low
 
 
+def _temp(raw: int, scale: float = 0.01, decimals: int = 1) -> float | None:
+    """Convert a raw register value to °C, returning None for sentinel/error values."""
+    v = round(_s16(raw) * scale, decimals)
+    return v if -40.0 <= v <= 130.0 else None
+
+
 class ECL310Device:
     """Communicates with the ECL 310 via Modbus TCP."""
 
@@ -99,8 +105,8 @@ class ECL310Device:
             _LOGGER.warning("Sonometer read failed")
             return
         r = result.registers
-        self.sonometer_t_flow = round(_s16(r[0]) * 0.01, 2)
-        self.sonometer_t_return = round(_s16(r[1]) * 0.01, 2)
+        self.sonometer_t_flow = _temp(r[0], decimals=2)
+        self.sonometer_t_return = _temp(r[1], decimals=2)
         self.sonometer_flow = round(_u32(r[2], r[3]) * 0.1, 1)
         self.sonometer_power = round(_u32(r[4], r[5]) * 0.1, 1)
         self.sonometer_volume = round(_u32(r[6], r[7]) * 0.1, 1)
@@ -115,11 +121,11 @@ class ECL310Device:
             _LOGGER.warning("Temperature block read failed")
             return
         r = result.registers
-        self.outside_temp = round(_s16(r[0]) * 0.01, 1)
-        self.heating_flow_temp = round(_s16(r[2]) * 0.01, 1)
-        self.warmwater_flow_temp = round(_s16(r[3]) * 0.01, 1)
-        self.heating_return_temp = round(_s16(r[4]) * 0.01, 1)
-        self.warmwater_return_temp = round(_s16(r[5]) * 0.01, 1)
+        self.outside_temp = _temp(r[0])
+        self.heating_flow_temp = _temp(r[2])
+        self.warmwater_flow_temp = _temp(r[3])
+        self.heating_return_temp = _temp(r[4])
+        self.warmwater_return_temp = _temp(r[5])
 
     async def _read_outside_minmax(
         self, client: AsyncModbusTcpClient, slave: int
@@ -128,7 +134,7 @@ class ECL310Device:
             REG_OUTSIDE_MIN, count=1, device_id=slave
         )
         if not result_min.isError():
-            self.outside_temp_min = round(_s16(result_min.registers[0]) * 0.01, 1)
+            self.outside_temp_min = _temp(result_min.registers[0])
         else:
             _LOGGER.warning("Outside temp min read failed")
 
@@ -136,7 +142,7 @@ class ECL310Device:
             REG_OUTSIDE_MAX, count=1, device_id=slave
         )
         if not result_max.isError():
-            self.outside_temp_max = round(_s16(result_max.registers[0]) * 0.01, 1)
+            self.outside_temp_max = _temp(result_max.registers[0])
         else:
             _LOGGER.warning("Outside temp max read failed")
 
