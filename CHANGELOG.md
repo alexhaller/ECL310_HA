@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/alexhaller/ECL310_HA/compare/v1.1.3...v1.2.0) (2026-05-17)
+
+### Features
+
+* make Modbus polling interval configurable via options flow ([7a1877b](https://github.com/alexhaller/ECL310_HA/commit/7a1877b164a99f9475c93d11c5e6e7748aafec64))
+
 ## [1.1.3](https://github.com/alexhaller/ECL310_HA/compare/v1.1.2...v1.1.3) (2026-05-17)
 
 ### Bug Fixes
