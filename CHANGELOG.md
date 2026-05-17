@@ -1,3 +1,9 @@
+## [1.1.3](https://github.com/alexhaller/ECL310_HA/compare/v1.1.2...v1.1.3) (2026-05-17)
+
+### Bug Fixes
+
+* filter out-of-range temperature register values as unavailable ([611956d](https://github.com/alexhaller/ECL310_HA/commit/611956d35cecc404de643d742ea9735bb486ba2a))
+
 ## [1.1.2](https://github.com/alexhaller/ECL310_HA/compare/v1.1.1...v1.1.2) (2026-05-16)
 
 ### Bug Fixes
