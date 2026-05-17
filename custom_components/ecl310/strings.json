@@ -1,4 +1,14 @@
 {
+  "options": {
+    "step": {
+      "init": {
+        "title": "ECL 310 Options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    }
+  },
   "config": {
     "step": {
       "user": {

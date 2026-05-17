@@ -6,6 +6,8 @@ DEFAULT_PORT = 502
 DEFAULT_SLAVE = 1
 
 CONF_SLAVE = "slave_id"
+CONF_SCAN_INTERVAL = "scan_interval"
+DEFAULT_SCAN_INTERVAL = 10
 
 OPERATING_MODES: dict[int, str] = {
     0: "manual",

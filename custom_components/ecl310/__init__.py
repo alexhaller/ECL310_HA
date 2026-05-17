@@ -15,13 +15,12 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .const import CONF_SLAVE, DOMAIN
+from .const import CONF_SCAN_INTERVAL, CONF_SLAVE, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .ecl310 import ECL310Device
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.NUMBER, Platform.SELECT]
-SCAN_INTERVAL = timedelta(seconds=30)
 
 type ECL310Coordinator = DataUpdateCoordinator[ECL310Device]
 
@@ -33,6 +32,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     slave: int = entry.data[CONF_SLAVE]
 
     device = ECL310Device(host=host, port=port, slave=slave)
+    interval = int(entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
 
     async def _async_update_data() -> ECL310Device:
         try:
@@ -46,15 +46,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=DOMAIN,
         update_method=_async_update_data,
-        update_interval=SCAN_INTERVAL,
+        update_interval=timedelta(seconds=interval),
     )
 
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
+    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the config entry when options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

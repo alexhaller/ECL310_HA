@@ -6,11 +6,24 @@ import re
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import CONF_SLAVE, DEFAULT_PORT, DEFAULT_SLAVE, DOMAIN
+from .const import (
+    CONF_SCAN_INTERVAL,
+    CONF_SLAVE,
+    DEFAULT_PORT,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SLAVE,
+    DOMAIN,
+)
 from .ecl310 import ECL310Device
 
 _HOST_RE = re.compile(
@@ -40,6 +53,11 @@ class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for ECL 310."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return ECL310OptionsFlow(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -74,6 +92,31 @@ class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=STEP_USER_SCHEMA,
             errors=errors,
         )
+
+
+class ECL310OptionsFlow(OptionsFlow):
+    """Options flow for ECL 310."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        self._config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        current = int(
+            self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        )
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_SCAN_INTERVAL, default=current): vol.All(
+                    vol.Coerce(int), vol.Range(min=5, max=300)
+                ),
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)
 
 
 async def _test_connection(host: str, port: int, slave: int) -> None:
