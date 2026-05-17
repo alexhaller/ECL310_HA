@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/alexhaller/ECL310_HA/compare/v1.2.0...v1.3.0) (2026-05-17)
+
+### Features
+
+* adaptive dual-coordinator polling architecture ([97b85ac](https://github.com/alexhaller/ECL310_HA/commit/97b85ac6a099a3fa80b3e50e760cf54951d969a6))
+
 ## [1.2.0](https://github.com/alexhaller/ECL310_HA/compare/v1.1.3...v1.2.0) (2026-05-17)
 
 ### Features
