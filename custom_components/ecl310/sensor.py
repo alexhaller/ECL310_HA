@@ -24,7 +24,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import BaseEntity, ECL310Coordinator
+from . import BaseEntity, ECL310Coordinator, KEY_COORDINATOR, KEY_SLOW_COORDINATOR
 from .const import DOMAIN
 from .ecl310 import ECL310Device
 
@@ -36,6 +36,7 @@ class ECL310SensorDescription(SensorEntityDescription):
     """Sensor description with value accessor."""
 
     value_fn: Callable[[ECL310Device], float | int | None]
+    slow: bool = False
 
 
 ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
@@ -47,6 +48,7 @@ ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda d: d.outside_temp,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="outside_temp_min",
@@ -56,6 +58,7 @@ ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda d: d.outside_temp_min,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="outside_temp_max",
@@ -65,6 +68,7 @@ ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda d: d.outside_temp_max,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="heating_flow_temp",
@@ -89,6 +93,7 @@ ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
         translation_key="heating_status",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.heating_status,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="warmwater_flow_temp",
@@ -113,18 +118,21 @@ ECL310_SENSORS: tuple[ECL310SensorDescription, ...] = (
         translation_key="warmwater_status",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.warmwater_status,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="heating_op_mode_status",
         translation_key="heating_op_mode_status",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.heating_op_mode,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="warmwater_op_mode_status",
         translation_key="warmwater_op_mode_status",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.warmwater_op_mode,
+        slow=True,
     ),
 )
 
@@ -172,6 +180,7 @@ SONOMETER_SENSORS: tuple[ECL310SensorDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         suggested_display_precision=1,
         value_fn=lambda d: d.sonometer_volume,
+        slow=True,
     ),
     ECL310SensorDescription(
         key="sonometer_energy",
@@ -181,6 +190,7 @@ SONOMETER_SENSORS: tuple[ECL310SensorDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         suggested_display_precision=0,
         value_fn=lambda d: d.sonometer_energy,
+        slow=True,
     ),
 )
 
@@ -191,15 +201,20 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up ECL 310 sensors."""
-    coordinator: ECL310Coordinator = hass.data[DOMAIN][entry.entry_id]
+    data = hass.data[DOMAIN][entry.entry_id]
+    coordinator: ECL310Coordinator = data[KEY_COORDINATOR]
+    slow_coordinator: ECL310Coordinator = data[KEY_SLOW_COORDINATOR]
     host: str = entry.data[CONF_HOST]
 
     entities: list[ECL310SensorEntity | SonometerSensorEntity] = [
-        ECL310SensorEntity(coordinator, description) for description in ECL310_SENSORS
+        ECL310SensorEntity(slow_coordinator if desc.slow else coordinator, desc)
+        for desc in ECL310_SENSORS
     ]
     entities += [
-        SonometerSensorEntity(coordinator, description, host)
-        for description in SONOMETER_SENSORS
+        SonometerSensorEntity(
+            slow_coordinator if desc.slow else coordinator, desc, host
+        )
+        for desc in SONOMETER_SENSORS
     ]
     async_add_entities(entities)
 

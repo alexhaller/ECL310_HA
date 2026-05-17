@@ -81,51 +81,83 @@ class ECL310Device:
             self._client.close()
             self._client = None
 
-    async def async_update(self) -> None:
-        """Read all registers from the device."""
+    async def async_update_slow(self) -> None:
+        """Read slow registers: outside temp, min/max, status, sonometer totals."""
         await self.async_connect()
         client = self._client
         assert client is not None
         slave = self._slave
-
         try:
-            await self._read_sonometer(client, slave)
-            await self._read_temperatures(client, slave)
+            await self._read_outside_temp(client, slave)
             await self._read_outside_minmax(client, slave)
-            await self._read_holding_modes(client, slave)
             await self._read_holding_status(client, slave)
+            await self._read_sonometer_totals(client, slave)
+        except ModbusException as err:
+            raise ConnectionError(f"Modbus read error: {err}") from err
+
+    async def async_update_fast(self) -> None:
+        """Read fast registers: circuit temps, op modes, setpoints, sonometer live."""
+        await self.async_connect()
+        client = self._client
+        assert client is not None
+        slave = self._slave
+        try:
+            await self._read_sonometer_live(client, slave)
+            await self._read_circuit_temperatures(client, slave)
+            await self._read_holding_modes(client, slave)
             await self._read_holding_heating_setpoints(client, slave)
             await self._read_holding_warmwater_setpoints(client, slave)
         except ModbusException as err:
             raise ConnectionError(f"Modbus read error: {err}") from err
 
-    async def _read_sonometer(self, client: AsyncModbusTcpClient, slave: int) -> None:
-        result = await client.read_input_registers(6005, count=10, device_id=slave)
+    async def _read_outside_temp(
+        self, client: AsyncModbusTcpClient, slave: int
+    ) -> None:
+        result = await client.read_input_registers(10200, count=1, device_id=slave)
         if result.isError():
-            _LOGGER.warning("Sonometer read failed")
+            _LOGGER.warning("Outside temperature read failed")
+            return
+        self.outside_temp = _temp(result.registers[0])
+
+    async def _read_circuit_temperatures(
+        self, client: AsyncModbusTcpClient, slave: int
+    ) -> None:
+        # 10202–10205: heat_flow(0), ww_flow(1), heat_ret(2), ww_ret(3)
+        result = await client.read_input_registers(10202, count=4, device_id=slave)
+        if result.isError():
+            _LOGGER.warning("Circuit temperature read failed")
+            return
+        r = result.registers
+        self.heating_flow_temp = _temp(r[0])
+        self.warmwater_flow_temp = _temp(r[1])
+        self.heating_return_temp = _temp(r[2])
+        self.warmwater_return_temp = _temp(r[3])
+
+    async def _read_sonometer_live(
+        self, client: AsyncModbusTcpClient, slave: int
+    ) -> None:
+        # 6005–6010: t_flow(0), t_return(1), flow uint32(2-3), power uint32(4-5)
+        result = await client.read_input_registers(6005, count=6, device_id=slave)
+        if result.isError():
+            _LOGGER.warning("Sonometer live read failed")
             return
         r = result.registers
         self.sonometer_t_flow = _temp(r[0], decimals=2)
         self.sonometer_t_return = _temp(r[1], decimals=2)
         self.sonometer_flow = round(_u32(r[2], r[3]) * 0.1, 1)
         self.sonometer_power = round(_u32(r[4], r[5]) * 0.1, 1)
-        self.sonometer_volume = round(_u32(r[6], r[7]) * 0.1, 1)
-        self.sonometer_energy = round(_u32(r[8], r[9]) * 0.1, 0)
 
-    async def _read_temperatures(
+    async def _read_sonometer_totals(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        # 10200–10205: outside(0), unused(1), heat_flow(2), ww_flow(3), heat_ret(4), ww_ret(5)
-        result = await client.read_input_registers(10200, count=6, device_id=slave)
+        # 6011–6014: volume uint32(0-1), energy uint32(2-3)
+        result = await client.read_input_registers(6011, count=4, device_id=slave)
         if result.isError():
-            _LOGGER.warning("Temperature block read failed")
+            _LOGGER.warning("Sonometer totals read failed")
             return
         r = result.registers
-        self.outside_temp = _temp(r[0])
-        self.heating_flow_temp = _temp(r[2])
-        self.warmwater_flow_temp = _temp(r[3])
-        self.heating_return_temp = _temp(r[4])
-        self.warmwater_return_temp = _temp(r[5])
+        self.sonometer_volume = round(_u32(r[0], r[1]) * 0.1, 1)
+        self.sonometer_energy = round(_u32(r[2], r[3]) * 0.1, 0)
 
     async def _read_outside_minmax(
         self, client: AsyncModbusTcpClient, slave: int

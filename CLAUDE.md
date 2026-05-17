@@ -7,11 +7,24 @@ Custom Home Assistant integration for the Danfoss ECL 310 district heating contr
 - GitHub: https://github.com/alexhaller/ECL310_HA
 
 Key files:
-- `custom_components/ecl310/ecl310.py` — device communication layer; all Modbus reads/writes; `async_update()` reads 7 register blocks per poll cycle
-- `custom_components/ecl310/__init__.py` — coordinator (30 s poll interval), `BaseEntity`, `async_setup_entry`, `async_unload_entry`
-- `custom_components/ecl310/config_flow.py` — required user inputs: host, port (default 502), slave_id (default 1)
+- `custom_components/ecl310/ecl310.py` — device communication layer; all Modbus reads/writes; `async_update_slow()` and `async_update_fast()` read separate register subsets
+- `custom_components/ecl310/__init__.py` — two coordinators (`slow_coordinator` 30 s fixed, `adaptive_coordinator` 30 s idle / configurable active), `BaseEntity`, `async_setup_entry`, `async_unload_entry`
+- `custom_components/ecl310/config_flow.py` — required user inputs: host, port (default 502), slave_id (default 1); options: active_interval (default 5 s)
 - `custom_components/ecl310/const.py` — DOMAIN, all register address constants, OPERATING_MODES mapping
 - Platforms: `sensor.py` (21 sensors), `number.py` (4 setpoints), `select.py` (2 operating modes)
+
+## Coordinator architecture
+
+Two coordinators share a single `ECL310Device` instance (same TCP connection, shared properties):
+
+| Coordinator | Poll interval | Registers | Entities |
+|---|---|---|---|
+| `slow_coordinator` | 30 s fixed | outside temp (10200), outside min/max, status (4210–4211), sonometer volume+energy (6011–6014) | `slow=True` sensors |
+| `adaptive_coordinator` | 30 s idle → active when `sonometer_flow > 0` | circuit temps (10202–10205), op modes (4200–4201), setpoints (11179, 12189), sonometer live (6005–6010) | all other entities |
+
+**Default is adaptive** — any new sensor/number/select entity uses `adaptive_coordinator` unless `slow=True` is set on its `ECL310SensorDescription`.
+
+Active interval is user-configurable (2–30 s, default 5 s) via Settings → Devices → ECL 310 → Configure. Idle and slow intervals are hardcoded at 30 s.
 
 ## Project-specific notes
 

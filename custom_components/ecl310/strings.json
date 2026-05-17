@@ -4,7 +4,7 @@
       "init": {
         "title": "ECL 310 Options",
         "data": {
-          "scan_interval": "Polling interval (seconds)"
+          "active_interval": "Active polling interval (seconds, when flow > 0)"
         }
       }
     }

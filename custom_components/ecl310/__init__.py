@@ -15,12 +15,22 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .const import CONF_SCAN_INTERVAL, CONF_SLAVE, DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import (
+    CONF_ACTIVE_INTERVAL,
+    CONF_SLAVE,
+    DEFAULT_ACTIVE_INTERVAL,
+    IDLE_INTERVAL_S,
+    SLOW_INTERVAL_S,
+    DOMAIN,
+)
 from .ecl310 import ECL310Device
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.NUMBER, Platform.SELECT]
+
+KEY_COORDINATOR = "coordinator"
+KEY_SLOW_COORDINATOR = "slow_coordinator"
 
 type ECL310Coordinator = DataUpdateCoordinator[ECL310Device]
 
@@ -32,26 +42,49 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     slave: int = entry.data[CONF_SLAVE]
 
     device = ECL310Device(host=host, port=port, slave=slave)
-    interval = int(entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
+    active_s = int(entry.options.get(CONF_ACTIVE_INTERVAL, DEFAULT_ACTIVE_INTERVAL))
 
-    async def _async_update_data() -> ECL310Device:
+    async def _async_update_slow() -> ECL310Device:
         try:
-            await device.async_update()
+            await device.async_update_slow()
         except Exception as err:
-            raise UpdateFailed(f"ECL310 update failed: {err}") from err
+            raise UpdateFailed(f"ECL310 slow update failed: {err}") from err
         return device
 
-    coordinator: ECL310Coordinator = DataUpdateCoordinator(
+    async def _async_update_fast() -> ECL310Device:
+        try:
+            await device.async_update_fast()
+        except Exception as err:
+            raise UpdateFailed(f"ECL310 fast update failed: {err}") from err
+        flowing = (device.sonometer_flow or 0) > 0
+        new_interval = timedelta(seconds=active_s if flowing else IDLE_INTERVAL_S)
+        if adaptive_coordinator.update_interval != new_interval:
+            adaptive_coordinator.update_interval = new_interval
+        return device
+
+    slow_coordinator: ECL310Coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
-        name=DOMAIN,
-        update_method=_async_update_data,
-        update_interval=timedelta(seconds=interval),
+        name=f"{DOMAIN}_slow",
+        update_method=_async_update_slow,
+        update_interval=timedelta(seconds=SLOW_INTERVAL_S),
     )
 
-    await coordinator.async_config_entry_first_refresh()
+    adaptive_coordinator: ECL310Coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name=f"{DOMAIN}_adaptive",
+        update_method=_async_update_fast,
+        update_interval=timedelta(seconds=IDLE_INTERVAL_S),
+    )
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    await slow_coordinator.async_config_entry_first_refresh()
+    await adaptive_coordinator.async_config_entry_first_refresh()
+
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
+        KEY_COORDINATOR: adaptive_coordinator,
+        KEY_SLOW_COORDINATOR: slow_coordinator,
+    }
 
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
 
@@ -68,8 +101,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        coordinator: ECL310Coordinator = hass.data[DOMAIN].pop(entry.entry_id)
-        device: ECL310Device = coordinator.data
+        data = hass.data[DOMAIN].pop(entry.entry_id)
+        device: ECL310Device = data[KEY_COORDINATOR].data
         await device.async_close()
     return unload_ok
 

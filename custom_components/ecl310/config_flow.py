@@ -17,10 +17,10 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import (
-    CONF_SCAN_INTERVAL,
+    CONF_ACTIVE_INTERVAL,
     CONF_SLAVE,
+    DEFAULT_ACTIVE_INTERVAL,
     DEFAULT_PORT,
-    DEFAULT_SCAN_INTERVAL,
     DEFAULT_SLAVE,
     DOMAIN,
 )
@@ -107,12 +107,14 @@ class ECL310OptionsFlow(OptionsFlow):
             return self.async_create_entry(data=user_input)
 
         current = int(
-            self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            self._config_entry.options.get(
+                CONF_ACTIVE_INTERVAL, DEFAULT_ACTIVE_INTERVAL
+            )
         )
         schema = vol.Schema(
             {
-                vol.Required(CONF_SCAN_INTERVAL, default=current): vol.All(
-                    vol.Coerce(int), vol.Range(min=5, max=300)
+                vol.Required(CONF_ACTIVE_INTERVAL, default=current): vol.All(
+                    vol.Coerce(int), vol.Range(min=2, max=30)
                 ),
             }
         )

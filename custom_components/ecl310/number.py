@@ -16,7 +16,7 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import BaseEntity, ECL310Coordinator
+from . import BaseEntity, ECL310Coordinator, KEY_COORDINATOR
 from .const import (
     DOMAIN,
     REG_HEATING_COMFORT_TEMP,
@@ -100,7 +100,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up ECL 310 number entities."""
-    coordinator: ECL310Coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: ECL310Coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
     async_add_entities(
         ECL310NumberEntity(coordinator, description) for description in ECL310_NUMBERS
     )
