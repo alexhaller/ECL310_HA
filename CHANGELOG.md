@@ -1,3 +1,9 @@
+## [1.3.1](https://github.com/alexhaller/ECL310_HA/compare/v1.3.0...v1.3.1) (2026-05-18)
+
+### Bug Fixes
+
+* lower heating comfort temperature minimum to 0 °C ([7d66323](https://github.com/alexhaller/ECL310_HA/commit/7d6632355011b518dafe2e96648dfe52273af943))
+
 ## [1.3.0](https://github.com/alexhaller/ECL310_HA/compare/v1.2.0...v1.3.0) (2026-05-17)
 
 ### Features
