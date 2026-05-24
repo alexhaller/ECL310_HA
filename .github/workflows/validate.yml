@@ -36,7 +36,7 @@ jobs:
           python-version: "3.14"
       - name: Install dependencies
         run: |
-          pip install ruff mypy pip-audit homeassistant
+          pip install ruff mypy pip-audit pymodbus homeassistant
       - name: ruff check
         run: ruff check .
       - name: ruff format
