@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable
+from collections.abc import Callable
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -14,6 +14,7 @@ from homeassistant.components.number import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import BaseEntity, ECL310Coordinator, KEY_COORDINATOR
@@ -44,6 +45,7 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         translation_key="heating_comfort_temp",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=NumberDeviceClass.TEMPERATURE,
+        entity_category=EntityCategory.CONFIG,
         mode=NumberMode.BOX,
         native_min_value=0.0,
         native_max_value=26.0,
@@ -57,6 +59,7 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         translation_key="heating_saving_temp",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=NumberDeviceClass.TEMPERATURE,
+        entity_category=EntityCategory.CONFIG,
         mode=NumberMode.BOX,
         native_min_value=5.0,
         native_max_value=26.0,
@@ -70,6 +73,7 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         translation_key="warmwater_comfort_temp",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=NumberDeviceClass.TEMPERATURE,
+        entity_category=EntityCategory.CONFIG,
         mode=NumberMode.BOX,
         native_min_value=40.0,
         native_max_value=80.0,
@@ -83,6 +87,7 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
         translation_key="warmwater_saving_temp",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=NumberDeviceClass.TEMPERATURE,
+        entity_category=EntityCategory.CONFIG,
         mode=NumberMode.BOX,
         native_min_value=40.0,
         native_max_value=80.0,
