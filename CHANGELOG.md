@@ -1,3 +1,9 @@
+## [1.3.2](https://github.com/alexhaller/ECL310_HA/compare/v1.3.1...v1.3.2) (2026-05-25)
+
+### Bug Fixes
+
+* apply HA conventions missed in initial implementation ([8fd1f45](https://github.com/alexhaller/ECL310_HA/commit/8fd1f45b4680784440ea5f4229a5d738b8d19de0))
+
 ## [1.3.1](https://github.com/alexhaller/ECL310_HA/compare/v1.3.0...v1.3.1) (2026-05-18)
 
 ### Bug Fixes
