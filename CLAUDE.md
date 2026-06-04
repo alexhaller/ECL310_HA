@@ -5,6 +5,7 @@
 Custom Home Assistant integration for the Danfoss ECL 310 district heating controller. Communicates via Modbus TCP (default port 502, slave ID 1). The Modbus register map is fixed per the ECL 310 datasheet — do not change register addresses without verifying against the device documentation.
 
 - GitHub: https://github.com/alexhaller/ECL310_HA
+- Project forked from: -
 
 Key files:
 - `custom_components/ecl310/ecl310.py` — device communication layer; all Modbus reads/writes; `async_update_slow()` and `async_update_fast()` read separate register subsets
@@ -26,9 +27,32 @@ Two coordinators share a single `ECL310Device` instance (same TCP connection, sh
 
 Active interval is user-configurable (2–30 s, default 5 s) via Settings → Devices → ECL 310 → Configure. Idle and slow intervals are hardcoded at 30 s.
 
+## Danfoss documentation references
+
+- **ECL 310 Modbus communication description**: https://assets.danfoss.com/documents/206108/AQ074886472234en-010602.pdf
+- **Sonometer 40 datasheet / M-Bus setup guide**: https://assets.danfoss.com/documents/191069/AQ390129194620en-010101.pdf
+
+### Modbus address mapping
+
+The Danfoss documentation uses **PNU** (Parameter Number) to identify registers. The Modbus register address used in code is always **PNU − 1**:
+
+```
+Modbus address = Danfoss PNU − 1
+```
+
+Example: Danfoss PNU 10201 → Modbus register 10200 (`REG_OUTSIDE_TEMP`).
+
+### 32-bit registers ("low part")
+
+When the Danfoss docs describe a value as having a "low part", the value spans two consecutive 16-bit Modbus registers and must be combined into a 32-bit integer. This applies to sonometer flow, power, volume, and energy — handled by `_u32(high, low)` in `ecl310.py`.
+
+### Sonometer 40 M-Bus integration
+
+The Sonometer 40 is connected to the ECL 310 via M-Bus (not directly via Modbus/TCP). To activate it: ECL menu → Configuration → M-Bus → Scan. After scanning, the Sonometer registers (6005–6014) become readable via Modbus TCP on the ECL 310.
+
 ## Project-specific notes
 
-- **Domain**: `ecl310`; pip-audit packages: `pymodbus>=3.13.0`
+- **Domain**: `ecl310`; `requirements: []` — pymodbus is bundled by HA core, not listed
 - **Brand**: `custom_components/ecl310/brand/icon.png` + `brands/icon.png` (512×512 PNG — not yet committed, user must supply)
 - **`.releaserc.json`** `prepareCmd` path: `custom_components/ecl310/manifest.json`
 - **Sonometer 40**: exposed as a separate HA sub-device (`via_device=(DOMAIN, host)`); its sensors live in `sensor.py` as `SonometerSensorEntity`
