@@ -238,7 +238,7 @@ class ECL310Device:
         """Write a scaled temperature to a holding register."""
         await self.async_connect()
         assert self._client is not None
-        raw = int(round(value / scale))
+        raw = round(value / scale)
         result = await self._client.write_register(address, raw, device_id=self._slave)
         if result.isError():
             raise ConnectionError(f"Failed to write temperature to register {address}")

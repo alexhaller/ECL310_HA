@@ -19,9 +19,9 @@ from .const import (
     CONF_ACTIVE_INTERVAL,
     CONF_SLAVE,
     DEFAULT_ACTIVE_INTERVAL,
+    DOMAIN,
     IDLE_INTERVAL_S,
     SLOW_INTERVAL_S,
-    DOMAIN,
 )
 from .ecl310 import ECL310Device
 

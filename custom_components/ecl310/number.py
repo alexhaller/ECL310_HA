@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -17,7 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import BaseEntity, ECL310Coordinator, KEY_COORDINATOR
+from . import KEY_COORDINATOR, BaseEntity, ECL310Coordinator
 from .const import (
     DOMAIN,
     REG_HEATING_COMFORT_TEMP,

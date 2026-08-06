@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -24,7 +24,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import BaseEntity, ECL310Coordinator, KEY_COORDINATOR, KEY_SLOW_COORDINATOR
+from . import KEY_COORDINATOR, KEY_SLOW_COORDINATOR, BaseEntity, ECL310Coordinator
 from .const import DOMAIN
 from .ecl310 import ECL310Device
 

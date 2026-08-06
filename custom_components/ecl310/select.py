@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import BaseEntity, ECL310Coordinator, KEY_COORDINATOR
+from . import KEY_COORDINATOR, BaseEntity, ECL310Coordinator
 from .const import (
     DOMAIN,
     OPERATING_MODES,
