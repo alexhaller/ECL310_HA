@@ -8,6 +8,7 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -31,8 +32,19 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.NUMBER, Platform.SELECT]
 
 KEY_COORDINATOR = "coordinator"
 KEY_SLOW_COORDINATOR = "slow_coordinator"
+KEY_DEVICE_ID = "device_id"
 
 type ECL310Coordinator = DataUpdateCoordinator[ECL310Device]
+
+
+def main_device_info(host: str) -> DeviceInfo:
+    """Device info of the ECL 310 controller itself."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, host)},
+        name="Danfoss ECL 310",
+        manufacturer="Danfoss",
+        model="ECL 310",
+    )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -81,9 +93,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await slow_coordinator.async_config_entry_first_refresh()
     await adaptive_coordinator.async_config_entry_first_refresh()
 
+    # The Sonometer 40 links to the controller via `via_device_id`, which needs the
+    # registry id of an already registered device, so register the controller here
+    # instead of leaving it to the first entity being added.
+    main_device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        **main_device_info(host),
+    )
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         KEY_COORDINATOR: adaptive_coordinator,
         KEY_SLOW_COORDINATOR: slow_coordinator,
+        KEY_DEVICE_ID: main_device.id,
     }
 
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
@@ -124,12 +145,7 @@ class BaseEntity(CoordinatorEntity[ECL310Coordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._host)},
-            name="Danfoss ECL 310",
-            manufacturer="Danfoss",
-            model="ECL 310",
-        )
+        return main_device_info(self._host)
 
     def _handle_coordinator_update(self) -> None:
         self._device = self.coordinator.data
