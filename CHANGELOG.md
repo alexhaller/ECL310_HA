@@ -1,3 +1,9 @@
+## [1.3.4](https://github.com/alexhaller/ECL310_HA/compare/v1.3.3...v1.3.4) (2026-09-17)
+
+### Bug Fixes
+
+* use via_device_id for the Sonometer sub-device ([#1](https://github.com/alexhaller/ECL310_HA/issues/1)) ([9d8bc79](https://github.com/alexhaller/ECL310_HA/commit/9d8bc799fb5921c673a94aebdb6b7845704f24be))
+
 ## [1.3.3](https://github.com/alexhaller/ECL310_HA/compare/v1.3.2...v1.3.3) (2026-08-06)
 
 ## [1.3.2](https://github.com/alexhaller/ECL310_HA/compare/v1.3.1...v1.3.2) (2026-05-25)
