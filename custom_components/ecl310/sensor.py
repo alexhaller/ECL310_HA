@@ -24,7 +24,13 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import KEY_COORDINATOR, KEY_SLOW_COORDINATOR, BaseEntity, ECL310Coordinator
+from . import (
+    KEY_COORDINATOR,
+    KEY_DEVICE_ID,
+    KEY_SLOW_COORDINATOR,
+    BaseEntity,
+    ECL310Coordinator,
+)
 from .const import DOMAIN
 from .ecl310 import ECL310Device
 
@@ -205,6 +211,7 @@ async def async_setup_entry(
     coordinator: ECL310Coordinator = data[KEY_COORDINATOR]
     slow_coordinator: ECL310Coordinator = data[KEY_SLOW_COORDINATOR]
     host: str = entry.data[CONF_HOST]
+    main_device_id: str = data[KEY_DEVICE_ID]
 
     entities: list[ECL310SensorEntity | SonometerSensorEntity] = [
         ECL310SensorEntity(slow_coordinator if desc.slow else coordinator, desc)
@@ -212,7 +219,7 @@ async def async_setup_entry(
     ]
     entities += [
         SonometerSensorEntity(
-            slow_coordinator if desc.slow else coordinator, desc, host
+            slow_coordinator if desc.slow else coordinator, desc, host, main_device_id
         )
         for desc in SONOMETER_SENSORS
     ]
@@ -248,6 +255,7 @@ class SonometerSensorEntity(BaseEntity, SensorEntity):
         coordinator: ECL310Coordinator,
         description: ECL310SensorDescription,
         host: str,
+        main_device_id: str,
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
@@ -257,7 +265,7 @@ class SonometerSensorEntity(BaseEntity, SensorEntity):
             name="Sonometer 40",
             manufacturer="Danfoss",
             model="Sonometer 40",
-            via_device=(DOMAIN, host),
+            via_device_id=main_device_id,
         )
 
     @property
