@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-import voluptuous as vol
+import probatio
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -32,11 +32,11 @@ _HOST_RE = re.compile(
     r"|^localhost$"
 )
 
-STEP_USER_SCHEMA = vol.Schema(
+STEP_USER_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_HOST): str,
-        vol.Optional(CONF_PORT, default=DEFAULT_PORT): vol.Coerce(int),
-        vol.Optional(CONF_SLAVE, default=DEFAULT_SLAVE): vol.Coerce(int),
+        probatio.Required(CONF_HOST): str,
+        probatio.Optional(CONF_PORT, default=DEFAULT_PORT): probatio.Coerce(int),
+        probatio.Optional(CONF_SLAVE, default=DEFAULT_SLAVE): probatio.Coerce(int),
     }
 )
 
@@ -111,10 +111,10 @@ class ECL310OptionsFlow(OptionsFlow):
                 CONF_ACTIVE_INTERVAL, DEFAULT_ACTIVE_INTERVAL
             )
         )
-        schema = vol.Schema(
+        schema = probatio.Schema(
             {
-                vol.Required(CONF_ACTIVE_INTERVAL, default=current): vol.All(
-                    vol.Coerce(int), vol.Range(min=2, max=30)
+                probatio.Required(CONF_ACTIVE_INTERVAL, default=current): probatio.All(
+                    probatio.Coerce(int), probatio.Range(min=2, max=30)
                 ),
             }
         )
