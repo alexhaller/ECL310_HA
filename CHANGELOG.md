@@ -1,3 +1,15 @@
+## [2.0.0](https://github.com/alexhaller/ECL310_HA/compare/v1.3.4...v2.0.0) (2026-10-09)
+
+### ⚠ BREAKING CHANGES
+
+* requires Home Assistant 2026.9.0 or later.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* build schemas with probatio and require Home Assistant 2026.9 ([c4d05c4](https://github.com/alexhaller/ECL310_HA/commit/c4d05c41ab84f8bf777c18373ceffc967d42b8b7))
+
 ## [1.3.4](https://github.com/alexhaller/ECL310_HA/compare/v1.3.3...v1.3.4) (2026-09-17)
 
 ### Bug Fixes
