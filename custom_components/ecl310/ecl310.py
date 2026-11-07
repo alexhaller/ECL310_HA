@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 
+from homeassistant.exceptions import HomeAssistantError
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.exceptions import ModbusException
 
@@ -228,8 +229,8 @@ class ECL310Device:
         assert self._client is not None
         result = await self._client.write_register(address, mode, device_id=self._slave)
         if result.isError():
-            raise ConnectionError(
-                f"Failed to write operating mode to register {address}"
+            raise HomeAssistantError(
+                f"ECL 310 rejected operating mode {mode} for register {address}: {result}"
             )
 
     async def async_set_temperature(
@@ -241,4 +242,6 @@ class ECL310Device:
         raw = round(value / scale)
         result = await self._client.write_register(address, raw, device_id=self._slave)
         if result.isError():
-            raise ConnectionError(f"Failed to write temperature to register {address}")
+            raise HomeAssistantError(
+                f"ECL 310 rejected {value} (raw {raw}) for register {address}: {result}"
+            )
