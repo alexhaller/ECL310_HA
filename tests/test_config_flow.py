@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.ecl310.const import CONF_ACTIVE_INTERVAL, CONF_SLAVE, DOMAIN
@@ -69,7 +69,7 @@ async def test_options_flow_bounds_the_active_interval(
     config_entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
 
-    with pytest.raises(Exception, match="value must be at most 30"):
+    with pytest.raises(InvalidData, match=CONF_ACTIVE_INTERVAL):
         await hass.config_entries.options.async_configure(
             result["flow_id"], {CONF_ACTIVE_INTERVAL: 60}
         )
