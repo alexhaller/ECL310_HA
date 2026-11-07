@@ -96,9 +96,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # The Sonometer 40 links to the controller via `via_device_id`, which needs the
     # registry id of an already registered device, so register the controller here
     # instead of leaving it to the first entity being added.
-    main_device = dr.async_get(hass).async_get_or_create(
+    main_device = dr.async_get(hass).async_get_or_create_from_info(
         config_entry_id=entry.entry_id,
-        **main_device_info(host),
+        device_info=main_device_info(host),
     )
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
