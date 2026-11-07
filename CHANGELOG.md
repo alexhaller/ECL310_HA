@@ -1,3 +1,19 @@
+## [3.0.0](https://github.com/alexhaller/ECL310_HA/compare/v2.0.0...v3.0.0) (2026-11-07)
+
+### ⚠ BREAKING CHANGES
+
+* requires Home Assistant 2026.11.0 or later.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* register the controller through the device-info API of HA 2026.11 ([92fc77a](https://github.com/alexhaller/ECL310_HA/commit/92fc77aa7192d88e8a9eca0c98999f7d21803811))
+
+### Bug Fixes
+
+* report why the ECL 310 rejected a write ([9640395](https://github.com/alexhaller/ECL310_HA/commit/96403956761ab6908d1c24066bb4cd79e7e12397))
+
 ## [2.0.0](https://github.com/alexhaller/ECL310_HA/compare/v1.3.4...v2.0.0) (2026-10-09)
 
 ### ⚠ BREAKING CHANGES
