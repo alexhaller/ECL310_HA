@@ -9,11 +9,9 @@ from unittest.mock import patch
 
 import pytest
 from pymodbus.pdu import ExceptionResponse
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.ecl310.const import CONF_SLAVE, DOMAIN
-
-pytest_plugins = "pytest_homeassistant_custom_component"
 
 HOST = "192.168.1.50"
 ENTRY_DATA = {"host": HOST, "port": 502, CONF_SLAVE: 1}
@@ -98,11 +96,6 @@ class FakeModbusClient:
         self.writes.append((address, value))
         self.holding[address] = value
         return _Result()
-
-
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
-    """Enable the integration under custom_components."""
 
 
 @pytest.fixture
