@@ -1,3 +1,5 @@
+## [3.0.1](https://github.com/alexhaller/ECL310_HA/compare/v3.0.0...v3.0.1) (2026-11-09)
+
 ## [3.0.0](https://github.com/alexhaller/ECL310_HA/compare/v2.0.0...v3.0.0) (2026-11-07)
 
 ### ⚠ BREAKING CHANGES
