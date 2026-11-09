@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/alexhaller/ECL310_HA/compare/v3.0.1...v3.1.0) (2026-11-09)
+
+### Features
+
+* reconfigure, diagnostics and a sturdier Modbus layer ([85e89ca](https://github.com/alexhaller/ECL310_HA/commit/85e89ca8d1a05bf0b7d3901b11a11e56ecd1694f))
+
 ## [3.0.1](https://github.com/alexhaller/ECL310_HA/compare/v3.0.0...v3.0.1) (2026-11-09)
 
 ## [3.0.0](https://github.com/alexhaller/ECL310_HA/compare/v2.0.0...v3.0.0) (2026-11-07)
