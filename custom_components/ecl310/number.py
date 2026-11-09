@@ -11,15 +11,13 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import KEY_COORDINATOR, BaseEntity, ECL310Coordinator
+from . import BaseEntity, ECL310ConfigEntry, ECL310Coordinator
 from .const import (
-    DOMAIN,
     REG_HEATING_COMFORT_TEMP,
     REG_HEATING_SAVING_TEMP,
     REG_WARMWATER_COMFORT_TEMP,
@@ -101,11 +99,11 @@ ECL310_NUMBERS: tuple[ECL310NumberDescription, ...] = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: ECL310ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up ECL 310 number entities."""
-    coordinator: ECL310Coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
+    coordinator = entry.runtime_data.coordinator
     async_add_entities(
         ECL310NumberEntity(coordinator, description) for description in ECL310_NUMBERS
     )
@@ -123,7 +121,7 @@ class ECL310NumberEntity(BaseEntity, NumberEntity):
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{self._host}_{description.key}"
+        self._attr_unique_id = f"{self._base_id}_{description.key}"
 
     @property
     def native_value(self) -> float | None:

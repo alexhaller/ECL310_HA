@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable
+from typing import Any
 
 from homeassistant.exceptions import HomeAssistantError
 from pymodbus.client import AsyncModbusTcpClient
@@ -37,6 +39,8 @@ class ECL310Device:
         self._port = port
         self._slave = slave
         self._client: AsyncModbusTcpClient | None = None
+        # Register blocks whose last read the controller answered with an error
+        self._failed_blocks: set[str] = set()
 
         # Input register values
         self.outside_temp: float | None = None
@@ -64,6 +68,11 @@ class ECL310Device:
         self.heating_saving_temp: float | None = None
         self.warmwater_comfort_temp: float | None = None
         self.warmwater_saving_temp: float | None = None
+
+    @property
+    def failed_blocks(self) -> frozenset[str]:
+        """Register blocks the controller currently refuses to read."""
+        return frozenset(self._failed_blocks)
 
     async def async_connect(self) -> None:
         """Open and verify the Modbus TCP connection."""
@@ -111,137 +120,189 @@ class ECL310Device:
         except ModbusException as err:
             raise ConnectionError(f"Modbus read error: {err}") from err
 
+    async def _read(
+        self, block: str, request: Awaitable[Any], *fields: str
+    ) -> list[int] | None:
+        """Return the registers of one block, or None if the controller refused it.
+
+        A refused block must not keep showing its last values as if they were
+        current, so its fields are cleared. It is reported once when it starts
+        failing and once when it is back, not on every poll.
+        """
+        result = await request
+        if result.isError():
+            for field in fields:
+                setattr(self, field, None)
+            if block not in self._failed_blocks:
+                self._failed_blocks.add(block)
+                _LOGGER.warning(
+                    "%s read failed, its values are unavailable until it recovers: %s",
+                    block,
+                    result,
+                )
+            return None
+        if block in self._failed_blocks:
+            self._failed_blocks.discard(block)
+            _LOGGER.info("%s read works again", block)
+        registers: list[int] = result.registers
+        return registers
+
     async def _read_outside_temp(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        result = await client.read_input_registers(10200, count=1, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Outside temperature read failed")
-            return
-        self.outside_temp = _temp(result.registers[0])
+        r = await self._read(
+            "Outside temperature",
+            client.read_input_registers(10200, count=1, device_id=slave),
+            "outside_temp",
+        )
+        if r is not None:
+            self.outside_temp = _temp(r[0])
 
     async def _read_circuit_temperatures(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
         # 10202–10205: heat_flow(0), ww_flow(1), heat_ret(2), ww_ret(3)
-        result = await client.read_input_registers(10202, count=4, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Circuit temperature read failed")
-            return
-        r = result.registers
-        self.heating_flow_temp = _temp(r[0])
-        self.warmwater_flow_temp = _temp(r[1])
-        self.heating_return_temp = _temp(r[2])
-        self.warmwater_return_temp = _temp(r[3])
+        r = await self._read(
+            "Circuit temperature",
+            client.read_input_registers(10202, count=4, device_id=slave),
+            "heating_flow_temp",
+            "warmwater_flow_temp",
+            "heating_return_temp",
+            "warmwater_return_temp",
+        )
+        if r is not None:
+            self.heating_flow_temp = _temp(r[0])
+            self.warmwater_flow_temp = _temp(r[1])
+            self.heating_return_temp = _temp(r[2])
+            self.warmwater_return_temp = _temp(r[3])
 
     async def _read_sonometer_live(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
         # 6005–6010: t_flow(0), t_return(1), flow uint32(2-3), power uint32(4-5)
-        result = await client.read_input_registers(6005, count=6, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Sonometer live read failed")
-            return
-        r = result.registers
-        self.sonometer_t_flow = _temp(r[0], decimals=2)
-        self.sonometer_t_return = _temp(r[1], decimals=2)
-        self.sonometer_flow = round(_u32(r[2], r[3]) * 0.1, 1)
-        self.sonometer_power = round(_u32(r[4], r[5]) * 0.1, 1)
+        r = await self._read(
+            "Sonometer live",
+            client.read_input_registers(6005, count=6, device_id=slave),
+            "sonometer_t_flow",
+            "sonometer_t_return",
+            "sonometer_flow",
+            "sonometer_power",
+        )
+        if r is not None:
+            self.sonometer_t_flow = _temp(r[0], decimals=2)
+            self.sonometer_t_return = _temp(r[1], decimals=2)
+            self.sonometer_flow = round(_u32(r[2], r[3]) * 0.1, 1)
+            self.sonometer_power = round(_u32(r[4], r[5]) * 0.1, 1)
 
     async def _read_sonometer_totals(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
         # 6011–6014: volume uint32(0-1), energy uint32(2-3)
-        result = await client.read_input_registers(6011, count=4, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Sonometer totals read failed")
-            return
-        r = result.registers
-        self.sonometer_volume = round(_u32(r[0], r[1]) * 0.1, 1)
-        self.sonometer_energy = round(_u32(r[2], r[3]) * 0.1, 0)
+        r = await self._read(
+            "Sonometer totals",
+            client.read_input_registers(6011, count=4, device_id=slave),
+            "sonometer_volume",
+            "sonometer_energy",
+        )
+        if r is not None:
+            self.sonometer_volume = round(_u32(r[0], r[1]) * 0.1, 1)
+            self.sonometer_energy = round(_u32(r[2], r[3]) * 0.1, 0)
 
     async def _read_outside_minmax(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        result_min = await client.read_input_registers(
-            REG_OUTSIDE_MIN, count=1, device_id=slave
+        r = await self._read(
+            "Outside temperature min",
+            client.read_input_registers(REG_OUTSIDE_MIN, count=1, device_id=slave),
+            "outside_temp_min",
         )
-        if not result_min.isError():
-            self.outside_temp_min = _temp(result_min.registers[0])
-        else:
-            _LOGGER.warning("Outside temp min read failed")
+        if r is not None:
+            self.outside_temp_min = _temp(r[0])
 
-        result_max = await client.read_input_registers(
-            REG_OUTSIDE_MAX, count=1, device_id=slave
+        r = await self._read(
+            "Outside temperature max",
+            client.read_input_registers(REG_OUTSIDE_MAX, count=1, device_id=slave),
+            "outside_temp_max",
         )
-        if not result_max.isError():
-            self.outside_temp_max = _temp(result_max.registers[0])
-        else:
-            _LOGGER.warning("Outside temp max read failed")
+        if r is not None:
+            self.outside_temp_max = _temp(r[0])
 
     async def _read_holding_modes(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        result = await client.read_holding_registers(4200, count=2, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Operating mode read failed")
-            return
-        r = result.registers
-        self.heating_op_mode = r[0]
-        self.warmwater_op_mode = r[1]
+        r = await self._read(
+            "Operating mode",
+            client.read_holding_registers(4200, count=2, device_id=slave),
+            "heating_op_mode",
+            "warmwater_op_mode",
+        )
+        if r is not None:
+            self.heating_op_mode = r[0]
+            self.warmwater_op_mode = r[1]
 
     async def _read_holding_status(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        result = await client.read_holding_registers(4210, count=2, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Status read failed")
-            return
-        r = result.registers
-        self.heating_status = r[0]
-        self.warmwater_status = r[1]
+        r = await self._read(
+            "Status",
+            client.read_holding_registers(4210, count=2, device_id=slave),
+            "heating_status",
+            "warmwater_status",
+        )
+        if r is not None:
+            self.heating_status = r[0]
+            self.warmwater_status = r[1]
 
     async def _read_holding_heating_setpoints(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        result = await client.read_holding_registers(11179, count=2, device_id=slave)
-        if result.isError():
-            _LOGGER.warning("Heating setpoint read failed")
-            return
-        r = result.registers
-        self.heating_comfort_temp = round(_s16(r[0]) * 0.1, 1)
-        self.heating_saving_temp = round(_s16(r[1]) * 0.1, 1)
+        r = await self._read(
+            "Heating setpoint",
+            client.read_holding_registers(11179, count=2, device_id=slave),
+            "heating_comfort_temp",
+            "heating_saving_temp",
+        )
+        if r is not None:
+            self.heating_comfort_temp = round(_s16(r[0]) * 0.1, 1)
+            self.heating_saving_temp = round(_s16(r[1]) * 0.1, 1)
 
     async def _read_holding_warmwater_setpoints(
         self, client: AsyncModbusTcpClient, slave: int
     ) -> None:
-        result = await client.read_holding_registers(12189, count=2, device_id=slave)
+        r = await self._read(
+            "Warm water setpoint",
+            client.read_holding_registers(12189, count=2, device_id=slave),
+            "warmwater_comfort_temp",
+            "warmwater_saving_temp",
+        )
+        if r is not None:
+            self.warmwater_comfort_temp = round(_s16(r[0]) * 0.1, 1)
+            self.warmwater_saving_temp = round(_s16(r[1]) * 0.1, 1)
+
+    async def _write(self, address: int, raw: int, what: str) -> None:
+        """Write one holding register and turn every failure into a clear error."""
+        try:
+            await self.async_connect()
+            assert self._client is not None
+            result = await self._client.write_register(
+                address, raw, device_id=self._slave
+            )
+        except (ModbusException, OSError) as err:
+            raise HomeAssistantError(
+                f"Cannot reach the ECL 310 to write register {address}: {err}"
+            ) from err
         if result.isError():
-            _LOGGER.warning("Warmwater setpoint read failed")
-            return
-        r = result.registers
-        self.warmwater_comfort_temp = round(_s16(r[0]) * 0.1, 1)
-        self.warmwater_saving_temp = round(_s16(r[1]) * 0.1, 1)
+            raise HomeAssistantError(
+                f"ECL 310 rejected {what} for register {address}: {result}"
+            )
 
     async def async_set_operating_mode(self, address: int, mode: int) -> None:
         """Write an operating mode to a holding register."""
-        await self.async_connect()
-        assert self._client is not None
-        result = await self._client.write_register(address, mode, device_id=self._slave)
-        if result.isError():
-            raise HomeAssistantError(
-                f"ECL 310 rejected operating mode {mode} for register {address}: {result}"
-            )
+        await self._write(address, mode, f"operating mode {mode}")
 
     async def async_set_temperature(
         self, address: int, value: float, scale: float
     ) -> None:
         """Write a scaled temperature to a holding register."""
-        await self.async_connect()
-        assert self._client is not None
         raw = round(value / scale)
-        result = await self._client.write_register(address, raw, device_id=self._slave)
-        if result.isError():
-            raise HomeAssistantError(
-                f"ECL 310 rejected {value} (raw {raw}) for register {address}: {result}"
-            )
+        await self._write(address, raw, f"{value} (raw {raw})")

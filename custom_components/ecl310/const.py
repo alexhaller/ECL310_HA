@@ -1,5 +1,7 @@
 """Constants for the Danfoss ECL 310 integration."""
 
+from __future__ import annotations
+
 DOMAIN = "ecl310"
 
 DEFAULT_PORT = 502

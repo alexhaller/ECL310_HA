@@ -34,6 +34,9 @@ Go to **Settings > Devices & services > Add integration** and choose
 
 The integration connects once to check the details before it creates the entry.
 
+If the controller later gets a different address, open the integration and
+choose **Reconfigure** (three-dot menu). The entities and their history are kept.
+
 ### Options
 
 Open the integration and choose **Configure** to set the **active polling
@@ -92,6 +95,10 @@ Both use one Modbus TCP connection to the controller.
   slave ID other than 1.
 - **No Sonometer values**: run the M-Bus scan on the controller (see
   *Requirements*).
+- **Values show as unknown**: the controller refused that register block. The
+  log names the block once when it starts and once when it works again.
+- **Download diagnostics** on the integration page collects the settings and the
+  last values read, which helps when reporting a problem.
 - To see the raw Modbus traffic, enable debug logging for the integration under
   **Settings > Devices & services > Danfoss ECL 310 > Enable debug logging**.
 

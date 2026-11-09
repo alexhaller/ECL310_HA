@@ -82,6 +82,8 @@ class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(host)
                 self._abort_if_unique_id_configured()
+                # An entry moved to this host with Reconfigure keeps its old id
+                self._async_abort_entries_match({CONF_HOST: host})
                 return self.async_create_entry(
                     title=f"ECL 310 ({host})",
                     data={CONF_HOST: host, CONF_PORT: port, CONF_SLAVE: slave},
@@ -90,6 +92,62 @@ class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change host, port or slave ID without losing the entities.
+
+        The entry's unique id is left alone: devices and entities are keyed on
+        it, so they keep their IDs and history when the controller moves.
+        """
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            host: str = user_input[CONF_HOST].strip()
+            port: int = user_input[CONF_PORT]
+            slave: int = user_input[CONF_SLAVE]
+
+            try:
+                if not _HOST_RE.match(host):
+                    raise InvalidHost
+                await _test_connection(host, port, slave)
+            except InvalidHost:
+                errors["host"] = "invalid_host"
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except Exception:  # noqa: BLE001
+                errors["base"] = "unknown"
+            else:
+                if any(
+                    host in (other.unique_id, other.data.get(CONF_HOST))
+                    for other in self._async_current_entries(include_ignore=True)
+                    if other.entry_id != entry.entry_id
+                ):
+                    return self.async_abort(reason="already_configured")
+                return self.async_update_reload_and_abort(
+                    entry,
+                    title=f"ECL 310 ({host})",
+                    data_updates={CONF_HOST: host, CONF_PORT: port, CONF_SLAVE: slave},
+                )
+
+        current = user_input or entry.data
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=probatio.Schema(
+                {
+                    probatio.Required(CONF_HOST, default=current[CONF_HOST]): str,
+                    probatio.Optional(
+                        CONF_PORT, default=current[CONF_PORT]
+                    ): probatio.Coerce(int),
+                    probatio.Optional(
+                        CONF_SLAVE, default=current[CONF_SLAVE]
+                    ): probatio.Coerce(int),
+                }
+            ),
             errors=errors,
         )
 

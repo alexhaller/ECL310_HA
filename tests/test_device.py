@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+
 import pytest
 from homeassistant.exceptions import HomeAssistantError
+from pymodbus.exceptions import ModbusIOException
 
 from custom_components.ecl310.const import REG_HEATING_COMFORT_TEMP
 from custom_components.ecl310.ecl310 import ECL310Device, _temp
@@ -65,3 +68,39 @@ async def test_rejected_write_names_the_exception(device: ECL310Device) -> None:
 
     with pytest.raises(HomeAssistantError, match="exception_code=6"):
         await device.async_set_temperature(REG_HEATING_COMFORT_TEMP, 21.5, 0.1)
+
+
+async def test_unreachable_controller_on_write_is_a_clear_error(
+    device: ECL310Device,
+) -> None:
+    FakeModbusClient.instances[0].fail_writes_with = ModbusIOException("no reply")
+
+    with pytest.raises(HomeAssistantError, match="Cannot reach the ECL 310"):
+        await device.async_set_temperature(REG_HEATING_COMFORT_TEMP, 21.5, 0.1)
+
+
+async def test_refused_block_clears_its_values_and_warns_once(
+    device: ECL310Device, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Stale values must not look current, and the log must not fill up."""
+    client = FakeModbusClient.instances[0]
+    client.refuse_reads = {10202}
+
+    with caplog.at_level(logging.INFO):
+        await device.async_update_fast()
+        await device.async_update_fast()
+
+    assert device.heating_flow_temp is None
+    assert device.warmwater_return_temp is None
+    # Other blocks of the same poll are unaffected
+    assert device.heating_comfort_temp == 21.5
+    assert device.failed_blocks == {"Circuit temperature"}
+    assert caplog.text.count("Circuit temperature read failed") == 1
+
+    client.refuse_reads = set()
+    with caplog.at_level(logging.INFO):
+        await device.async_update_fast()
+
+    assert device.heating_flow_temp == 45.0
+    assert device.failed_blocks == frozenset()
+    assert "Circuit temperature read works again" in caplog.text

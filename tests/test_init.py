@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from homeassistant.components.number import ATTR_VALUE, SERVICE_SET_VALUE
 from homeassistant.components.select import ATTR_OPTION, SERVICE_SELECT_OPTION
@@ -13,7 +14,6 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant.common import MockConfigEntry
 
-from custom_components.ecl310 import KEY_COORDINATOR
 from custom_components.ecl310.const import (
     DOMAIN,
     IDLE_INTERVAL_S,
@@ -121,7 +121,7 @@ async def test_poll_speeds_up_while_heat_flows(
     config_entry: MockConfigEntry,
 ) -> None:
     await _setup(hass, config_entry)
-    coordinator = hass.data[DOMAIN][config_entry.entry_id][KEY_COORDINATOR]
+    coordinator = config_entry.runtime_data.coordinator
     assert coordinator.update_interval == timedelta(seconds=IDLE_INTERVAL_S)
 
     modbus.instances[0].input[6008] = 125  # flow 12.5
@@ -144,3 +144,40 @@ async def test_unload_closes_the_connection(
     assert await hass.config_entries.async_unload(config_entry.entry_id)
     assert config_entry.state is ConfigEntryState.NOT_LOADED
     assert not modbus.instances[0].connected
+
+
+async def test_failed_setup_closes_the_connection(
+    hass: HomeAssistant,
+    modbus: type[FakeModbusClient],
+    config_entry: MockConfigEntry,
+) -> None:
+    """Every retry builds a new client; a failed one must not stay behind."""
+    with patch.object(FakeModbusClient, "close", autospec=True) as close:
+        with patch.object(
+            FakeModbusClient, "connect", autospec=True, return_value=False
+        ):
+            config_entry.add_to_hass(hass)
+            await hass.config_entries.async_setup(config_entry.entry_id)
+            await hass.async_block_till_done()
+
+        assert config_entry.state is ConfigEntryState.SETUP_RETRY
+        assert close.call_count == len(modbus.instances) >= 1
+
+
+async def test_diagnostics(
+    hass: HomeAssistant,
+    modbus: type[FakeModbusClient],
+    config_entry: MockConfigEntry,
+) -> None:
+    from custom_components.ecl310.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
+
+    await _setup(hass, config_entry)
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert diagnostics["entry"]["data"]["host"] == HOST
+    assert diagnostics["values"]["outside_temp"] == -3.5
+    assert diagnostics["failed_register_blocks"] == []
+    assert set(diagnostics["coordinators"]) == {"ecl310_adaptive", "ecl310_slow"}

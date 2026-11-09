@@ -11,9 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONF_HOST,
     UnitOfEnergy,
     UnitOfPower,
     UnitOfTemperature,
@@ -25,11 +23,10 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import (
-    KEY_COORDINATOR,
-    KEY_DEVICE_ID,
-    KEY_SLOW_COORDINATOR,
     BaseEntity,
+    ECL310ConfigEntry,
     ECL310Coordinator,
+    stable_id,
 )
 from .const import DOMAIN
 from .ecl310 import ECL310Device
@@ -203,15 +200,15 @@ SONOMETER_SENSORS: tuple[ECL310SensorDescription, ...] = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: ECL310ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up ECL 310 sensors."""
-    data = hass.data[DOMAIN][entry.entry_id]
-    coordinator: ECL310Coordinator = data[KEY_COORDINATOR]
-    slow_coordinator: ECL310Coordinator = data[KEY_SLOW_COORDINATOR]
-    host: str = entry.data[CONF_HOST]
-    main_device_id: str = data[KEY_DEVICE_ID]
+    data = entry.runtime_data
+    coordinator = data.coordinator
+    slow_coordinator = data.slow_coordinator
+    base_id = stable_id(entry)
+    main_device_id = data.main_device_id
 
     entities: list[ECL310SensorEntity | SonometerSensorEntity] = [
         ECL310SensorEntity(slow_coordinator if desc.slow else coordinator, desc)
@@ -219,7 +216,10 @@ async def async_setup_entry(
     ]
     entities += [
         SonometerSensorEntity(
-            slow_coordinator if desc.slow else coordinator, desc, host, main_device_id
+            slow_coordinator if desc.slow else coordinator,
+            desc,
+            base_id,
+            main_device_id,
         )
         for desc in SONOMETER_SENSORS
     ]
@@ -238,7 +238,7 @@ class ECL310SensorEntity(BaseEntity, SensorEntity):
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{self._host}_{description.key}"
+        self._attr_unique_id = f"{self._base_id}_{description.key}"
 
     @property
     def native_value(self) -> float | int | None:
@@ -254,14 +254,14 @@ class SonometerSensorEntity(BaseEntity, SensorEntity):
         self,
         coordinator: ECL310Coordinator,
         description: ECL310SensorDescription,
-        host: str,
+        base_id: str,
         main_device_id: str,
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{host}_sonometer_{description.key}"
+        self._attr_unique_id = f"{base_id}_sonometer_{description.key}"
         self._sonometer_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{host}_sonometer")},
+            identifiers={(DOMAIN, f"{base_id}_sonometer")},
             name="Sonometer 40",
             manufacturer="Danfoss",
             model="Sonometer 40",

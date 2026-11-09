@@ -19,6 +19,15 @@
           "port": "Modbus TCP port",
           "slave_id": "Slave ID"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Danfoss ECL 310",
+        "description": "Enter the new connection details of the same ECL 310 controller. Its entities and their history are kept.",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "port": "Modbus TCP port",
+          "slave_id": "Slave ID"
+        }
       }
     },
     "error": {
@@ -27,34 +36,77 @@
       "unknown": "Unexpected error. Please check the logs for more details."
     },
     "abort": {
-      "already_configured": "This device is already configured."
+      "already_configured": "This device is already configured.",
+      "reconfigure_successful": "The connection details were updated."
     }
   },
   "entity": {
     "sensor": {
-      "outside_temp": {"name": "Outside Temperature"},
-      "outside_temp_min": {"name": "Outside Temperature Min"},
-      "outside_temp_max": {"name": "Outside Temperature Max"},
-      "heating_flow_temp": {"name": "Heating Flow Temperature"},
-      "heating_return_temp": {"name": "Heating Return Temperature"},
-      "heating_status": {"name": "Heating Status"},
-      "warmwater_flow_temp": {"name": "Warm Water Flow Temperature"},
-      "warmwater_return_temp": {"name": "Warm Water Return Temperature"},
-      "warmwater_status": {"name": "Warm Water Status"},
-      "heating_op_mode_status": {"name": "Heating Operating Mode Status"},
-      "warmwater_op_mode_status": {"name": "Warm Water Operating Mode Status"},
-      "sonometer_t_flow": {"name": "Primary Flow Temperature"},
-      "sonometer_t_return": {"name": "Primary Return Temperature"},
-      "sonometer_flow": {"name": "Flow Rate"},
-      "sonometer_power": {"name": "Power"},
-      "sonometer_volume": {"name": "Volume"},
-      "sonometer_energy": {"name": "Energy"}
+      "outside_temp": {
+        "name": "Outside Temperature"
+      },
+      "outside_temp_min": {
+        "name": "Outside Temperature Min"
+      },
+      "outside_temp_max": {
+        "name": "Outside Temperature Max"
+      },
+      "heating_flow_temp": {
+        "name": "Heating Flow Temperature"
+      },
+      "heating_return_temp": {
+        "name": "Heating Return Temperature"
+      },
+      "heating_status": {
+        "name": "Heating Status"
+      },
+      "warmwater_flow_temp": {
+        "name": "Warm Water Flow Temperature"
+      },
+      "warmwater_return_temp": {
+        "name": "Warm Water Return Temperature"
+      },
+      "warmwater_status": {
+        "name": "Warm Water Status"
+      },
+      "heating_op_mode_status": {
+        "name": "Heating Operating Mode Status"
+      },
+      "warmwater_op_mode_status": {
+        "name": "Warm Water Operating Mode Status"
+      },
+      "sonometer_t_flow": {
+        "name": "Primary Flow Temperature"
+      },
+      "sonometer_t_return": {
+        "name": "Primary Return Temperature"
+      },
+      "sonometer_flow": {
+        "name": "Flow Rate"
+      },
+      "sonometer_power": {
+        "name": "Power"
+      },
+      "sonometer_volume": {
+        "name": "Volume"
+      },
+      "sonometer_energy": {
+        "name": "Energy"
+      }
     },
     "number": {
-      "heating_comfort_temp": {"name": "Heating Comfort Temperature"},
-      "heating_saving_temp": {"name": "Heating Saving Temperature"},
-      "warmwater_comfort_temp": {"name": "Warm Water Comfort Temperature"},
-      "warmwater_saving_temp": {"name": "Warm Water Saving Temperature"}
+      "heating_comfort_temp": {
+        "name": "Heating Comfort Temperature"
+      },
+      "heating_saving_temp": {
+        "name": "Heating Saving Temperature"
+      },
+      "warmwater_comfort_temp": {
+        "name": "Warm Water Comfort Temperature"
+      },
+      "warmwater_saving_temp": {
+        "name": "Warm Water Saving Temperature"
+      }
     },
     "select": {
       "heating_op_mode": {

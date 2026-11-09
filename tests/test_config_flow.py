@@ -79,3 +79,59 @@ async def test_options_flow_bounds_the_active_interval(
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert config_entry.options == {CONF_ACTIVE_INTERVAL: 10}
+
+
+@pytest.mark.usefixtures("modbus")
+async def test_reconfigure_moves_the_host_and_keeps_the_identity(
+    hass: HomeAssistant, config_entry: MockConfigEntry
+) -> None:
+    """Entities are keyed on the unique id, so it must survive a new host."""
+    config_entry.add_to_hass(hass)
+    result = await config_entry.start_reconfigure_flow(hass)
+    assert result["step_id"] == "reconfigure"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"host": "192.168.1.99", "port": 1502, CONF_SLAVE: 2}
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert config_entry.data == {"host": "192.168.1.99", "port": 1502, CONF_SLAVE: 2}
+    assert config_entry.unique_id == HOST
+    assert config_entry.title == "ECL 310 (192.168.1.99)"
+
+
+@pytest.mark.usefixtures("modbus")
+async def test_reconfigure_refuses_the_host_of_another_entry(
+    hass: HomeAssistant, config_entry: MockConfigEntry
+) -> None:
+    config_entry.add_to_hass(hass)
+    MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="192.168.1.99",
+        data={**ENTRY_DATA, "host": "192.168.1.99"},
+    ).add_to_hass(hass)
+    result = await config_entry.start_reconfigure_flow(hass)
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"host": "192.168.1.99", "port": 502, CONF_SLAVE: 1}
+    )
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    assert config_entry.data == ENTRY_DATA
+
+
+@pytest.mark.usefixtures("modbus")
+async def test_user_flow_refuses_a_host_an_entry_was_moved_to(
+    hass: HomeAssistant,
+) -> None:
+    MockConfigEntry(
+        domain=DOMAIN, unique_id="192.168.1.2", data={**ENTRY_DATA, "host": HOST}
+    ).add_to_hass(hass)
+
+    result = await _submit(hass, {"host": HOST})
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"

@@ -6,13 +6,11 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import KEY_COORDINATOR, BaseEntity, ECL310Coordinator
+from . import BaseEntity, ECL310ConfigEntry, ECL310Coordinator
 from .const import (
-    DOMAIN,
     OPERATING_MODES,
     REG_HEATING_OP_MODE,
     REG_WARMWATER_OP_MODE,
@@ -52,11 +50,11 @@ ECL310_SELECTS: tuple[ECL310SelectDescription, ...] = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: ECL310ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up ECL 310 select entities."""
-    coordinator: ECL310Coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
+    coordinator = entry.runtime_data.coordinator
     async_add_entities(
         ECL310SelectEntity(coordinator, description) for description in ECL310_SELECTS
     )
@@ -74,7 +72,7 @@ class ECL310SelectEntity(BaseEntity, SelectEntity):
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{self._host}_{description.key}"
+        self._attr_unique_id = f"{self._base_id}_{description.key}"
 
     @property
     def current_option(self) -> str | None:

@@ -75,22 +75,32 @@ class FakeModbusClient:
         self.holding = dict(HOLDING_REGISTERS)
         self.writes: list[tuple[int, int]] = []
         self.reject_writes_with: int | None = None
+        self.fail_writes_with: Exception | None = None
+        self.fail_connect = False
+        # Start addresses of register blocks the controller refuses to read
+        self.refuse_reads: set[int] = set()
         FakeModbusClient.instances.append(self)
 
     async def connect(self) -> bool:
-        self.connected = True
-        return True
+        self.connected = not self.fail_connect
+        return self.connected
 
     def close(self) -> None:
         self.connected = False
 
     async def read_input_registers(self, address: int, count: int, device_id: int):
+        if address in self.refuse_reads:
+            return ExceptionResponse(4, exception_code=2)
         return _Result([self.input[a] for a in range(address, address + count)])
 
     async def read_holding_registers(self, address: int, count: int, device_id: int):
+        if address in self.refuse_reads:
+            return ExceptionResponse(3, exception_code=2)
         return _Result([self.holding[a] for a in range(address, address + count)])
 
     async def write_register(self, address: int, value: int, device_id: int):
+        if self.fail_writes_with is not None:
+            raise self.fail_writes_with
         if self.reject_writes_with is not None:
             return ExceptionResponse(6, exception_code=self.reject_writes_with)
         self.writes.append((address, value))
