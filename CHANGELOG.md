@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/alexhaller/ECL310_HA/compare/v3.1.0...v3.1.1) (2026-11-24)
+
+### Bug Fixes
+
+* declare pymodbus as a requirement ([d49c6e1](https://github.com/alexhaller/ECL310_HA/commit/d49c6e15503ea67d9e6c7f2aabf2abc06168b33e))
+
 ## [3.1.0](https://github.com/alexhaller/ECL310_HA/compare/v3.0.1...v3.1.0) (2026-11-09)
 
 ### Features
