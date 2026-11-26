@@ -53,7 +53,7 @@ The Sonometer 40 is connected to the ECL 310 via M-Bus (not directly via Modbus/
 ## Project-specific notes
 
 - **Domain**: `ecl310`; `requirements: ["pymodbus>=3.10.0"]` — HA core does not install pymodbus by itself (only its Modbus integration declares it, pinned `==3.13.1` in HA 2026.11), so it must be declared. Keep it a lower bound, never an exact pin: an exact pin other than core Modbus's would break that integration. 3.10 is the first release with the `device_id=` keyword
-- **Brand**: `custom_components/ecl310/brand/icon.png` + `brands/icon.png` (512×512 PNG — not yet committed, user must supply)
+- **Brand**: `custom_components/ecl310/brand/icon.png` (256×256) + `brand/icon@2x.png` (512×512) + `brands/icon.png` (512×512)
 - **`.releaserc.json`** `prepareCmd` path: `custom_components/ecl310/manifest.json`
 - **Sonometer 40**: exposed as a separate HA sub-device (`via_device=(DOMAIN, host)`); its sensors live in `sensor.py` as `SonometerSensorEntity`
 - **Status registers** 4210/4211: raw integer sensors — value mapping unknown, update if Danfoss documentation clarifies
