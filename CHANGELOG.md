@@ -1,3 +1,9 @@
+## [3.1.2](https://github.com/alexhaller/ECL310_HA/compare/v3.1.1...v3.1.2) (2026-11-26)
+
+### Bug Fixes
+
+* ship the brand icon at the sizes hassfest accepts ([e1d10d8](https://github.com/alexhaller/ECL310_HA/commit/e1d10d8c22e25abb7b524e9c88b1f00d61b66ffa))
+
 ## [3.1.1](https://github.com/alexhaller/ECL310_HA/compare/v3.1.0...v3.1.1) (2026-11-24)
 
 ### Bug Fixes
