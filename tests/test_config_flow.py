@@ -32,12 +32,15 @@ async def test_user_flow_creates_entry(hass: HomeAssistant) -> None:
     assert result["result"].unique_id == HOST
 
 
+@pytest.mark.parametrize("host", ["ecl310", "fd00::1"])
 @pytest.mark.usefixtures("modbus")
-async def test_invalid_host(hass: HomeAssistant) -> None:
-    result = await _submit(hass, {"host": "not a host"})
+async def test_any_host_that_connects_is_accepted(
+    hass: HomeAssistant, host: str
+) -> None:
+    result = await _submit(hass, {"host": host})
 
-    assert result["type"] is FlowResultType.FORM
-    assert result["errors"] == {"host": "invalid_host"}
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["result"].unique_id == host
 
 
 async def test_cannot_connect(hass: HomeAssistant) -> None:

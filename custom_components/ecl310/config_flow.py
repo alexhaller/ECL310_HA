@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 import probatio
@@ -26,12 +25,6 @@ from .const import (
 )
 from .ecl310 import ECL310Device
 
-_HOST_RE = re.compile(
-    r"^(\d{1,3}\.){3}\d{1,3}$"  # IPv4
-    r"|^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$"  # hostname
-    r"|^localhost$"
-)
-
 STEP_USER_SCHEMA = probatio.Schema(
     {
         probatio.Required(CONF_HOST): str,
@@ -43,10 +36,6 @@ STEP_USER_SCHEMA = probatio.Schema(
 
 class CannotConnect(HomeAssistantError):
     """Raised when connection to the device fails."""
-
-
-class InvalidHost(HomeAssistantError):
-    """Raised when the host string is not a valid IP or hostname."""
 
 
 class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -70,11 +59,7 @@ class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
             slave: int = user_input[CONF_SLAVE]
 
             try:
-                if not _HOST_RE.match(host):
-                    raise InvalidHost
                 await _test_connection(host, port, slave)
-            except InvalidHost:
-                errors["host"] = "invalid_host"
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except Exception:  # noqa: BLE001
@@ -112,11 +97,7 @@ class ECL310ConfigFlow(ConfigFlow, domain=DOMAIN):
             slave: int = user_input[CONF_SLAVE]
 
             try:
-                if not _HOST_RE.match(host):
-                    raise InvalidHost
                 await _test_connection(host, port, slave)
-            except InvalidHost:
-                errors["host"] = "invalid_host"
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except Exception:  # noqa: BLE001
