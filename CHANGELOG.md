@@ -1,3 +1,9 @@
+## [3.1.3](https://github.com/alexhaller/ECL310_HA/compare/v3.1.2...v3.1.3) (2026-11-27)
+
+### Bug Fixes
+
+* accept any host that connects in the config flow ([ae34824](https://github.com/alexhaller/ECL310_HA/commit/ae34824e9a6d94774abac7666a594b44b2d5ad3d))
+
 ## [3.1.2](https://github.com/alexhaller/ECL310_HA/compare/v3.1.1...v3.1.2) (2026-11-26)
 
 ### Bug Fixes
